@@ -5,34 +5,67 @@ const { Category, Product } = require('../../models');
 
 router.get('/', async (req, res) => {
   try{
-    const categories = await Category.findAll({
+    const items = await Category.findAll({
       include: [{model:Product}],
     });
-    res.status(200).json(categories);
+    return res.status(200).json(items);
   }catch(err){
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
-router.get('/:id', (req, res) => {
-  // find one category by its `id` value
-  // be sure to include its associated Products
-  res.send("find catagories by id");
+router.get('/:id', async (req, res) => {
+  try{
+    const item = await Category.findByPk(req.params.id, {
+      include: [{model:Product}],
+    });
+    if(!item)
+      return res.status(404).json({message: 'No category found with that id.'});
+
+    return res.status(200).json(item);
+  }catch(err){
+    return res.status(500).json(err);
+  }
 });
 
-router.post('/', (req, res) => {
-  // create a new category
-  res.send("create new catagory")
+router.post('/', async (req, res) => {
+  try{
+    const item = await Category.create(req.body);
+    return res.status(200).json(item);
+  }catch(err){
+    return res.status(500).json(err);
+  }
 });
 
-router.put('/:id', (req, res) => {
-  // update a category by its `id` value
-  res.send("update a category");
+router.put('/:id', async (req, res) => {
+  try{
+    const item = await Category.update(req.body, {
+      where: {
+        id: req.params.id,
+      },
+    });
+    if(!item || item[0] == 0)
+      return res.status(404).json({message: 'No category found with that id.'});
+
+    return res.status(200).json(item);
+  }catch(err){
+    return res.status(500).json(err);
+  }
 });
 
-router.delete('/:id', (req, res) => {
-  // delete a category by its `id` value
-  res.send("delete ID");
+router.delete('/:id', async (req, res) => {
+  try{
+    const item = await Category.destroy({
+      where:{
+        id: req.params.id,
+      },
+    });
+    if(!item)
+      return res.status(404).json({message: 'No category found with that id.'});
+    return res.status(200).json(item);
+  }catch(err){
+    return res.status(500).json(err);
+  }
 });
 
 module.exports = router;
