@@ -8,7 +8,6 @@ router.get('/', async (req, res) => {
   // be sure to include its associated Product data
 
   try{
-    console.log("hehelhel");
     const items = await ProductTag.findAll();
     if(!items[0])
       return res.status(404).json({message:'Unable to find any product tags'});
@@ -28,6 +27,7 @@ router.get('/:id', async(req, res) => {
     if(!item)
       return res.status(404).json({message: 'Unable to find product tag with ID'});
 
+    return res.status(200).json(item);
   }catch(err){
     return res.status(500).json(err);
   }
@@ -63,7 +63,7 @@ router.put('/:id', async(req, res) => {
 router.delete('/:id', async(req, res) => {
   // delete on tag by its `id` value
   try{
-    const data = ProductTag.destroy({
+    const data = await ProductTag.destroy({
       where:{id: req.params.id},
     });
     if(!data)
