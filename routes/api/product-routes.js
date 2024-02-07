@@ -93,24 +93,40 @@ router.put('/:id', async(req, res) => {
     if(!product)
       return res.status(404).json({message:'No product with ID found.'});
 
-    const productTags = await ProductTag.findAll({
-      where:{product_id: req.params.id}
-    });
-    const productTagIds = productTags.map(({tag_id}) => tag_id);
-    const newProductTags = req.body.tagIds.filter((tag_id)=> !productTagIds.includes(tag_id))
-    .map((tag_id) => {
-      return {
-        product_id: req.params.id,
-        tag_id,
-      };
-    });
-    const productTagsToRemove = productTags.filter(({tag_id}) => !req.body.tagIds.include(tag_id))
-    .map(({id}) => id);
-    const productTagStuff = await Promise.all([ProductTag.destroy({where: {id:productTagsToRemove}})],
-                      [ProductTag.bulkCreate(newProductTags)]);
-    console.log(productTagStuff);
-    return res.status(200).json(prod)
+    if (req.body.tagIds && req.body.tagIds.length) {
+      const productTags = await ProductTag.findAll({
+        where:{product_id: req.params.id}
+      });
+      
+      const productTagIds = productTags.map(({tag_id}) => tag_id);
+      console.log(productTagIds);
+      const newProductTags = req.body.tagIds.filter((tag_id)=> !productTagIds.includes(tag_id))
+      .map((tag_id) => {
+        return {
+          product_id: req.params.id,
+          tag_id,
+        };
+      })
+      console.log(productTags);
+      const productTagsToRemove = productTags.filter(({tag_id}) => !req.body.tagIds.includes(tag_id));
+      console.log(productTagsToRemove);
+      const temp = productTagsToRemove.map(({id}) => id);
+      console.log("------");
+      console.log(temp);
+      console.log(newProductTags);
+      if(temp[0]){
+        const prod = await ProductTag.destroy({where: {id:temp}});
+        console.log(prod);
+      }
+      if(newProductTags[0]){
+        const productTagStuff = await ProductTag.bulkCreate(newProductTags);
+        console.log(productTagStuff);
+      }
+     
+      return res.status(200).json(productTags)
+  }
   }catch(err){
+    console.log(err);
     return res.status(500).json(err);
   }
   // update product data
